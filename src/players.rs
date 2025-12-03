@@ -132,7 +132,7 @@ mod tests {
         assert_eq!(players.get()[2].hand.len(), 1);
     }
     #[test]
-    fn increase_number_of_cards_to_deal_works() {
+    fn increase_number_of_cards_to_deal_increments_number_of_cards_to_deal_by_1() {
         let mut players = Players::new(1);
         players.get_mut()[0].increase_number_of_cards_to_deal();
         assert_eq!(players.get()[0].number_of_cards_to_deal, 2);
