@@ -3,7 +3,7 @@ use config::Config;
 use poker_combination::PokerCombination;
 use std::io;
 
-use crate::players::{Player, Players};
+use crate::players::Players;
 
 mod card_suit;
 mod card_value;
