@@ -3,7 +3,7 @@ use config::Config;
 use poker_combination::PokerCombination;
 use std::io;
 
-use crate::players::Players;
+use crate::players::{Player, Players};
 
 mod card_suit;
 mod card_value;
@@ -18,11 +18,7 @@ fn main() {
     // Most of this code should be in GameLogic
     println!("Welcome to bluff!");
     let config: Config = Config::get_config();
-    let mut players = Players::new(config.no_of_players);
-    let mut current_bet = PokerCombination::None;
-    while !players.is_limit_hit(config.card_on_hand_limit) {
-        play_round(&mut players, &mut current_bet);
-    }
+    play_game(Players::new(config.no_of_players), PokerCombination::None, config);
     println!("Game over. A player reached the card limit. Press ENTER to continue");
 
     io::stdin()
@@ -31,14 +27,12 @@ fn main() {
 }
 
 // To refactor and extract all the below functions to GameLogic module
-fn play_round(players: &mut Players, current_bet: &mut PokerCombination) {
+fn play_game(mut players: Players, mut current_bet: PokerCombination, config: Config) {
     println!("Beginning new round");
     println!("All cards: {:?}", players.get_all_cards());
 
-    for current_index in 0..players.len() {
+    while !players.is_limit_hit(config.card_on_hand_limit) {
         println!("Current bet: {:?}", current_bet);
-        println!("Player {current_index}");
-        players.players()[current_index].print_hand();
         // Move the below command getting loop into a method in commands? try_get_next_command_until_success?
         let mut command = commands::get_next_command();
         while command == Commands::Unknown {
@@ -46,28 +40,18 @@ fn play_round(players: &mut Players, current_bet: &mut PokerCombination) {
         }
         match command {
             Commands::Bet(value) => {
-                handle_new_bet(value, current_bet);
+                handle_new_bet(value, &mut current_bet);
             }
             Commands::Call => {
-                let len = players.len();
-                let previous_index = (current_index + len - 1) % len;
-                handle_call(players, current_bet, current_index, previous_index);
-                return;
+                // TODO if combination is none repeat the turn
+                players.handle_call(&current_bet);
+                reset_game_state(&mut players, &mut current_bet);
             }
             Commands::Unknown => {}
         }
         utils::clear_screen();
+        players.next_player();
     }
-}
-
-fn handle_call(
-    players: &mut Players,
-    current_bet: &mut PokerCombination,
-    current_index: usize,
-    previous_index: usize,
-) {
-    players.increase_cards_to_deal(current_bet, current_index, previous_index);
-    reset_game_state(players, current_bet);
 }
 
 fn reset_game_state(players: &mut Players, current_bet: &mut PokerCombination) {

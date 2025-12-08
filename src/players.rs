@@ -31,12 +31,13 @@ impl Player {
 
 pub struct Players {
     players: Vec<Player>,
+    current_player_index: usize,
 }
 
 impl Players {
     pub fn new(no_of_players: usize) -> Self {
         let players = vec![Player::new(Hand::new()); no_of_players];
-        let mut players = Players { players };
+        let mut players = Players { players, current_player_index: 0 };
         println!("Dealing cards");
         players.deal_cards();
         println!("Cards dealt");
@@ -69,7 +70,7 @@ impl Players {
     }
 
     #[allow(dead_code)] // used in UT for now
-    fn players_mut(&mut self) -> &mut Vec<Player> {
+    pub(crate) fn players_mut(&mut self) -> &mut Vec<Player> {
         &mut self.players
     }
 
@@ -92,25 +93,41 @@ impl Players {
             .iter()
             .any(|player| player.number_of_cards_to_deal == limit)
     }
-
-    pub fn increase_cards_to_deal(
-        &mut self,
-        current_bet: &PokerCombination,
-        current_index: usize,
-        previous_index: usize,
-    ) {
-        if self.is_other_player_lying(current_bet) {
-            self.players[previous_index].increase_number_of_cards_to_deal();
-        } else {
-            self.players[current_index].increase_number_of_cards_to_deal();
-        }
-    }
-
+    
     fn is_other_player_lying(&self, current_bet: &PokerCombination) -> bool {
         !self
             .get_all_cards()
             .discover_combinations()
             .contains(current_bet)
+    }
+    
+    fn get_current_player(&mut self) -> &mut Player {
+        self.players.get_mut(self.current_player_index).unwrap()
+    }
+
+    fn get_previous_player(&mut self) -> &mut Player {
+        let len = self.players.len();
+        let previous_index = (self.current_player_index + len - 1) % len;
+        self.players.get_mut(previous_index).unwrap()
+    }
+    
+    pub fn handle_call(&mut self, current_bet: &PokerCombination) {
+        if self.is_other_player_lying(current_bet)
+        {
+            self.get_previous_player().increase_number_of_cards_to_deal();
+        } else {
+            self.get_current_player().increase_number_of_cards_to_deal();
+        }
+    }
+
+    pub(crate) fn next_player(&mut self) {
+        if self.current_player_index == (self.players.len()-1) {
+            self.current_player_index = 0;
+        } else {
+            self.current_player_index += 1;
+        }
+        println!("Player {}", self.current_player_index);
+        self.get_current_player().print_hand();
     }
 }
 
