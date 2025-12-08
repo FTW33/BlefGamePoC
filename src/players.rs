@@ -60,7 +60,7 @@ impl Players {
             }
         }
     }
-    pub fn players(&self) -> &Vec<Player> {
+    pub fn get(&self) -> &Vec<Player> {
         &self.players
     }
 
@@ -82,14 +82,14 @@ impl Players {
 
     pub fn get_all_cards(&self) -> Hand {
         let mut all_cards = Hand::new();
-        for player in self.players() {
+        for player in self.get() {
             all_cards.put_cards(player.hand());
         }
         all_cards
     }
 
     pub fn is_limit_hit(&self, limit: u8) -> bool {
-        self.players()
+        self.get()
             .iter()
             .any(|player| player.number_of_cards_to_deal == limit)
     }
@@ -133,6 +133,9 @@ impl Players {
 
 #[cfg(test)]
 mod tests {
+    use crate::card_suit::Suit;
+    use crate::card_value::CardValue;
+    use crate::hand::Card;
     use crate::players::Players;
 
     #[test]
@@ -159,11 +162,24 @@ mod tests {
     #[test]
     fn deal_card_deals_appropriately_to_each_player() {
         let mut players = Players::new(3);
-        players.players_mut()[0].number_of_cards_to_deal = 3;
+        players.get_mut()[0].number_of_cards_to_deal = 3;
         players.empty_all_cards();
         players.deal_cards();
-        assert_eq!(players.players()[0].hand.len(), 3);
-        assert_eq!(players.players()[1].hand.len(), 1);
-        assert_eq!(players.players()[2].hand.len(), 1);
+        assert_eq!(players.get()[0].hand.len(), 3);
+        assert_eq!(players.get()[1].hand.len(), 1);
+        assert_eq!(players.get()[2].hand.len(), 1);
+    }
+    #[test]
+    fn increase_number_of_cards_to_deal_increments_number_of_cards_to_deal_by_1() {
+        let mut players = Players::new(1);
+        players.get_mut()[0].increase_number_of_cards_to_deal();
+        assert_eq!(players.get()[0].number_of_cards_to_deal, 2);
+    }
+
+    #[test]
+    fn put_card_works() {
+        let mut players = Players::new(1);
+        players.get_mut()[0].put_card(Card::new(Suit::Clubs, CardValue::Ace));
+        assert_eq!(players.get_all_cards().len(), 2); // 1 on creation and another one on put_card call
     }
 }

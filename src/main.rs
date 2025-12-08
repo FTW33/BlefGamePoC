@@ -7,7 +7,7 @@ use crate::players::Players;
 
 mod card_suit;
 mod card_value;
-mod commands;
+mod command;
 mod config;
 mod hand;
 mod players;
@@ -34,9 +34,9 @@ fn play_game(mut players: Players, mut current_bet: PokerCombination, config: Co
     while !players.is_limit_hit(config.card_on_hand_limit) {
         println!("Current bet: {:?}", current_bet);
         // Move the below command getting loop into a method in commands? try_get_next_command_until_success?
-        let mut command = commands::get_next_command();
-        while command == Commands::Unknown {
-            command = commands::get_next_command();
+        let mut command = command::get_next_command();
+        while command.is_err() {
+            command = command::get_next_command();
         }
         match command {
             Commands::Bet(value) => {
@@ -47,7 +47,6 @@ fn play_game(mut players: Players, mut current_bet: PokerCombination, config: Co
                 players.handle_call(&current_bet);
                 reset_game_state(&mut players, &mut current_bet);
             }
-            Commands::Unknown => {}
         }
         utils::clear_screen();
         players.next_player();
