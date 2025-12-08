@@ -1,4 +1,4 @@
-use commands::Commands;
+use command::Command;
 use config::Config;
 use poker_combination::PokerCombination;
 use std::io;
@@ -18,7 +18,11 @@ fn main() {
     // Most of this code should be in GameLogic
     println!("Welcome to bluff!");
     let config: Config = Config::get_config();
-    play_game(Players::new(config.no_of_players), PokerCombination::None, config);
+    play_game(
+        Players::new(config.no_of_players),
+        PokerCombination::None,
+        config,
+    );
     println!("Game over. A player reached the card limit. Press ENTER to continue");
 
     io::stdin()
@@ -39,13 +43,16 @@ fn play_game(mut players: Players, mut current_bet: PokerCombination, config: Co
             command = command::get_next_command();
         }
         match command {
-            Commands::Bet(value) => {
+            Ok(Command::Bet(value)) => {
                 handle_new_bet(value, &mut current_bet);
             }
-            Commands::Call => {
+            Ok(Command::Call) => {
                 // TODO if combination is none repeat the turn
                 players.handle_call(&current_bet);
                 reset_game_state(&mut players, &mut current_bet);
+            }
+            _ => {
+                println!("Unknown command");
             }
         }
         utils::clear_screen();
