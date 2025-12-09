@@ -7,6 +7,8 @@ use poker_combination::PokerCombination;
 use crate::hand::Hand;
 use crate::players::Players;
 
+use crate::statics::*;
+
 mod card_suit;
 mod card_value;
 mod command;
@@ -15,10 +17,11 @@ mod hand;
 mod players;
 mod poker_combination;
 mod utils;
+mod statics;
 
 fn main() {
+    initial_greeting();
     // Most of this code should be in GameLogic
-    println!("Welcome to bluff!");
     let config: Config = Config::get_config();
     let mut players = Players::new(config.no_of_players);
     let mut current_bet = PokerCombination::None;
