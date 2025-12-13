@@ -1,4 +1,3 @@
-#![allow(unused)]
 /*
 https://docs.rs/dialoguer/0.12.0/dialoguer/
 https://docs.rs/console/latest/console/
