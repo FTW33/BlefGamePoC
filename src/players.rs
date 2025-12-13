@@ -1,4 +1,5 @@
 use crate::hand::{Card, Deck, Hand};
+use crate::poker_combination::PokerCombination;
 
 #[derive(Clone)]
 pub struct Player {
@@ -30,12 +31,16 @@ impl Player {
 
 pub struct Players {
     players: Vec<Player>,
+    current_player_index: usize,
 }
 
 impl Players {
     pub fn new(no_of_players: usize) -> Self {
         let players = vec![Player::new(Hand::new()); no_of_players];
-        let mut players = Players { players };
+        let mut players = Players {
+            players,
+            current_player_index: 0,
+        };
         println!("Dealing cards");
         players.deal_cards();
         println!("Cards dealt");
@@ -63,11 +68,17 @@ impl Players {
     }
 
     #[allow(dead_code)] // Used in UT for now
+    pub fn get_mut(&mut self) -> &mut Vec<Player> {
+        &mut self.players
+    }
+
+    #[allow(dead_code)] // Used in UT for now
     pub fn len(&self) -> usize {
         self.players.len()
     }
 
-    pub fn get_mut(&mut self) -> &mut Vec<Player> {
+    #[allow(dead_code)] // used in UT for now
+    pub(crate) fn players_mut(&mut self) -> &mut Vec<Player> {
         &mut self.players
     }
 
@@ -82,7 +93,6 @@ impl Players {
         for player in self.get() {
             all_cards.put_cards(player.hand());
         }
-        println!("All cards: {:?}", all_cards);
         all_cards
     }
 
@@ -90,6 +100,42 @@ impl Players {
         self.get()
             .iter()
             .any(|player| player.number_of_cards_to_deal == limit)
+    }
+
+    fn is_other_player_lying(&self, current_bet: &PokerCombination) -> bool {
+        !self
+            .get_all_cards()
+            .discover_combinations()
+            .contains(current_bet)
+    }
+
+    fn get_current_player(&mut self) -> &mut Player {
+        self.players.get_mut(self.current_player_index).unwrap()
+    }
+
+    fn get_previous_player(&mut self) -> &mut Player {
+        let len = self.players.len();
+        let previous_index = (self.current_player_index + len - 1) % len;
+        self.players.get_mut(previous_index).unwrap()
+    }
+
+    pub fn handle_call(&mut self, current_bet: &PokerCombination) {
+        if self.is_other_player_lying(current_bet) {
+            self.get_previous_player()
+                .increase_number_of_cards_to_deal();
+        } else {
+            self.get_current_player().increase_number_of_cards_to_deal();
+        }
+    }
+
+    pub(crate) fn next_player(&mut self) {
+        if self.current_player_index == (self.players.len() - 1) {
+            self.current_player_index = 0;
+        } else {
+            self.current_player_index += 1;
+        }
+        println!("Player {}", self.current_player_index);
+        self.get_current_player().print_hand();
     }
 }
 

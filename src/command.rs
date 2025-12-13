@@ -1,6 +1,6 @@
+use crate::poker_combination::PokerCombination;
 use std::io;
 use std::str::FromStr;
-use crate::poker_combination::PokerCombination;
 
 #[derive(PartialEq, Debug)]
 pub enum Command {
@@ -58,12 +58,15 @@ impl FromStr for Command {
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
     #[test]
     fn command_correctly_parses_valid_bet_command() {
         let valid_bet_command = "bet pair";
-        assert_eq!(Ok(Command::Bet(PokerCombination::Pair)), Command::from_str(valid_bet_command));
+        assert_eq!(
+            Ok(Command::Bet(PokerCombination::Pair)),
+            Command::from_str(valid_bet_command)
+        );
     }
     #[test]
     fn command_fails_to_parse_invalid_bet_command() {
