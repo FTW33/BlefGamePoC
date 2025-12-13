@@ -21,6 +21,7 @@ mod statics;
 
 fn main() {
     initial_greeting();
+    players_config();
     // Most of this code should be in GameLogic
     let config: Config = Config::get_config();
     let mut players = Players::new(config.no_of_players);
