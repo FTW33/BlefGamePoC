@@ -4,7 +4,7 @@ https://docs.rs/console/latest/console/
 */
 use console::style;
 use std::sync::LazyLock;
-use dialoguer::{Input,Select, theme::ColorfulTheme};
+use dialoguer::{Select, theme::ColorfulTheme};
 pub static GREETING: LazyLock<String> = LazyLock::new(|| {
     style("Welcome to bluff!").on_red().bold().to_string()
 });
