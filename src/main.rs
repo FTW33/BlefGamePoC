@@ -5,6 +5,8 @@ use std::io;
 
 use crate::players::Players;
 
+use crate::statics::*;
+
 mod card_suit;
 mod card_value;
 mod command;
@@ -13,10 +15,12 @@ mod hand;
 mod players;
 mod poker_combination;
 mod utils;
+mod statics;
 
 fn main() {
+    initial_greeting();
+    players_config();
     // Most of this code should be in GameLogic
-    println!("Welcome to bluff!");
     let config: Config = Config::get_config();
     play_game(
         Players::new(config.no_of_players),
