@@ -103,19 +103,16 @@ impl BetData {
 
 impl PartialOrd for BetData {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if self.poker_combination < other.poker_combination
-            || self.poker_combination > other.poker_combination
+        if self.poker_combination != other.poker_combination
         {
             return self.poker_combination.partial_cmp(&other.poker_combination);
         }
         if self.value1.is_some() && other.value1.is_some() {
-            if self.value1 < other.value1 || self.value1 > other.value1 {
+            if self.value1 != other.value1 {
                 return self.value1.partial_cmp(&other.value1);
             }
-            if self.value1.is_some() && other.value1.is_some() {
-                if self.value2 < other.value2 || self.value2 > other.value2 {
-                    return self.value2.partial_cmp(&other.value2);
-                }
+            if self.value1.is_some() && other.value1.is_some() && self.value2 != other.value2 {
+                return self.value2.partial_cmp(&other.value2);
             }
         }
         Some(Ordering::Equal)
@@ -148,14 +145,14 @@ pub fn get_next_command() -> Command {
                 HighCard | Pair | PokerCombination::Three | Quad => {
                     let value = select_value_with_prompt("Select value for the figure");
                     bet_data.with_value1(value);
-                    Bet { 0: bet_data }
+                    Bet(bet_data)
                 }
                 TwoPairs | FullHouse | Straight => {
                     let value1 = select_value_with_prompt("Select the first value for the figure");
                     let value2 = select_value_with_prompt("Select the second value for the figure");
                     bet_data.with_value1(value1);
                     bet_data.with_value2(value2);
-                    Bet { 0: bet_data }
+                    Bet(bet_data)
                 }
                 Flush | StraightFlush | RoyalFlush => {
                     let suit_selection = Select::with_theme(&ColorfulTheme::default())
@@ -166,7 +163,7 @@ pub fn get_next_command() -> Command {
                         .unwrap();
                     let suit = BET_SUIT[suit_selection];
                     bet_data.with_suit(suit);
-                    Bet { 0: bet_data }
+                    Bet(bet_data)
                 }
             }
         }

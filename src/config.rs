@@ -1,8 +1,6 @@
 use crate::statics::{LIMIT_CONFIG, PLAYERS_CONFIG};
 use dialoguer::Select;
 use dialoguer::theme::ColorfulTheme;
-use std::fmt::Debug;
-use std::str::FromStr;
 
 pub struct Config {
     pub(crate) no_of_players: usize,
@@ -28,7 +26,7 @@ impl Config {
             .unwrap();
         let card_on_hand_limit = LIMIT_CONFIG[selection];
         println!("Selection of limit={} confirmed!", card_on_hand_limit);
-        Config {
+        Self {
             no_of_players,
             card_on_hand_limit,
         }

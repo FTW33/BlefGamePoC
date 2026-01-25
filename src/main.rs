@@ -20,7 +20,7 @@ mod utils;
 fn main() {
     initial_greeting();
     // Most of this code should be in GameLogic
-    let config: Config = players_config();
+    let config: Config = Config::get_config();
     play_game(
         Players::new(config.no_of_players),
         BetData::new(PokerCombination::None),
