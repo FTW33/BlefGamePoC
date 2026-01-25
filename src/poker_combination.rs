@@ -1,4 +1,6 @@
-#[derive(PartialEq, PartialOrd, Debug)]
+use std::fmt::{Display, Formatter};
+
+#[derive(PartialEq, PartialOrd, Debug, Clone, Copy)]
 pub enum PokerCombination {
     None,
     HighCard,
@@ -11,6 +13,25 @@ pub enum PokerCombination {
     Flush,
     StraightFlush,
     RoyalFlush,
+}
+
+impl Display for PokerCombination {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+        let combination_string = match self {
+            PokerCombination::None => "none",
+            PokerCombination::HighCard => "highcard",
+            PokerCombination::Pair => "pair",
+            PokerCombination::TwoPairs => "twopairs",
+            PokerCombination::Three => "three",
+            PokerCombination::FullHouse => "fullhouse",
+            PokerCombination::Quad => "quad",
+            PokerCombination::Straight => "straight",
+            PokerCombination::Flush => "flush",
+            PokerCombination::StraightFlush => "straightflush",
+            PokerCombination::RoyalFlush => "royalflush",
+        };
+        write!(f, "{}", combination_string)
+    }
 }
 
 impl TryFrom<&str> for PokerCombination {

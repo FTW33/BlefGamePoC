@@ -1,9 +1,9 @@
+use crate::command::BetData;
+use crate::players::Players;
 use command::Command;
 use config::Config;
 use poker_combination::PokerCombination;
 use std::io;
-
-use crate::players::Players;
 
 use crate::statics::*;
 
@@ -14,17 +14,16 @@ mod config;
 mod hand;
 mod players;
 mod poker_combination;
-mod utils;
 mod statics;
+mod utils;
 
 fn main() {
     initial_greeting();
-    players_config();
     // Most of this code should be in GameLogic
-    let config: Config = Config::get_config();
+    let config: Config = players_config();
     play_game(
         Players::new(config.no_of_players),
-        PokerCombination::None,
+        BetData::new(PokerCombination::None),
         config,
     );
     println!("Game over. A player reached the card limit. Press ENTER to continue");
@@ -35,28 +34,20 @@ fn main() {
 }
 
 // To refactor and extract all the below functions to GameLogic module
-fn play_game(mut players: Players, mut current_bet: PokerCombination, config: Config) {
+fn play_game(mut players: Players, mut current_bet: BetData, config: Config) {
     println!("Beginning new round");
     println!("All cards: {:?}", players.get_all_cards());
 
     while !players.is_limit_hit(config.card_on_hand_limit) {
         println!("Current bet: {:?}", current_bet);
-        // Move the below command getting loop into a method in commands? try_get_next_command_until_success?
-        let mut command = command::get_next_command();
-        while command.is_err() {
-            command = command::get_next_command();
-        }
-        match command {
-            Ok(Command::Bet(value)) => {
-                handle_new_bet(value, &mut current_bet);
+        match command::get_next_command() {
+            Command::Bet(data) => {
+                handle_new_bet(data, &mut current_bet);
             }
-            Ok(Command::Call) => {
+            Command::Call => {
                 // TODO if combination is none repeat the turn
-                players.handle_call(&current_bet);
+                players.handle_call(current_bet.poker_combination());
                 reset_game_state(&mut players, &mut current_bet);
-            }
-            _ => {
-                println!("Unknown command");
             }
         }
         utils::clear_screen();
@@ -64,20 +55,16 @@ fn play_game(mut players: Players, mut current_bet: PokerCombination, config: Co
     }
 }
 
-fn reset_game_state(players: &mut Players, current_bet: &mut PokerCombination) {
+fn reset_game_state(players: &mut Players, current_bet: &mut BetData) {
     players.empty_all_cards();
     players.deal_cards();
-    *current_bet = PokerCombination::None;
+    *current_bet = BetData::new(PokerCombination::None);
 }
 
-fn handle_new_bet(new_bet: PokerCombination, current_bet: &mut PokerCombination) {
+fn handle_new_bet(new_bet: BetData, current_bet: &mut BetData) {
     if new_bet <= *current_bet {
         println!("The new bet has to be bigger than the existing one");
     } else {
         *current_bet = new_bet;
     }
-}
-
-fn get_bet(bet_str: &str) -> Result<PokerCombination, String> {
-    PokerCombination::try_from(bet_str)
 }
